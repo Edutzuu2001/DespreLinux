@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSec & OS Hub Arcade</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #00ff00;
+            --accent-color: #00aa00;
+            --card-bg: rgba(10, 10, 10, 0.85);
+            --menu-bg: #000000;
+            --monitor-border: #2c2c30;
+        }
+
+        .theme-black {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --accent-color: #0077ff;
+            --card-bg: rgba(15, 15, 15, 0.9);
+            --menu-bg: #0a0a0a;
+            --monitor-border: #151518;
+        }
+
+        .theme-light {
+            --bg-color: #f5f7fa;
+            --text-color: #1a1a1a;
+            --accent-color: #ff5500;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --menu-bg: #e4e7eb;
+            --monitor-border: #d1d5db;
+        }
+
+        .theme-linux-os {
+            --bg-color: #121f15;
+            --text-color: #7bf095;
+            --accent-color: #2ea847;
+            --card-bg: rgba(20, 35, 25, 0.9);
+            --menu-bg: #0b140d;
+            --monitor-border: #233d29;
+        }
+
+        .theme-windows-os {
+            --bg-color: #051429;
+            --text-color: #5ce6e6;
+            --accent-color: #00a4ef;
+            --card-bg: rgba(8, 25, 50, 0.9);
+            --menu-bg: #020b18;
+            --monitor-border: #0f315c;
+        }
+
+        .theme-macos-os {
+            --bg-color: #1a1a1b;
+            --text-color: #e5e5ea;
+            --accent-color: #bf5af2;
+            --card-bg: rgba(35, 35, 37, 0.9);
+            --menu-bg: #111112;
+            --monitor-border: #4a4a4c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            position: relative;
+            padding-top: 80px;
+        }
+
+        canvas#matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none; 
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--menu-bg);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .score-display {
+            background: rgba(255, 170, 0, 0.15);
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .controls button, .controls select {
+            background: var(--menu-bg);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 8px 12px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        /* --- STRUCTURA MONITOR PC CU STICKERE --- */
+        .pc-frame {
+            max-width: 1100px;
+            margin: 30px auto;
+            border: 24px solid var(--monitor-border);
+            border-radius: 16px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            background: transparent;
+            z-index: 10;
+        }
+
+        .sticker {
+            position: absolute;
+            background: #ffaa00;
+            color: #000;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            z-index: 20;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+            border: 1px solid #fff;
+            cursor: pointer;
+            user-select: none;
+        }
+        .sticker:hover {
+            transform: scale(1.1);
+            background: #fff;
+        }
+        .st-tux { top: -20px; left: 40px; background: #ffffff; transform: rotate(-4deg); }
+        .st-kali { top: -22px; right: 50px; background: #7f00ff; color: #fff; transform: rotate(5deg); }
+        .st-arch { bottom: 60px; left: -20px; background: #1793d1; color: #fff; transform: rotate(-90deg); }
+        .st-code { bottom: -22px; right: 120px; background: #00ff00; transform: rotate(2deg); }
+        .st-root { top: 180px; right: -20px; background: #cc0000; color: #fff; transform: rotate(90deg); }
+
+        .container {
+            padding: 30px;
+            background: transparent;
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 40px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--accent-color);
+            scroll-margin-top: 130px;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .quiz-container {
+            margin-top: 25px;
+            padding: 20px;
+            border: 1px dashed var(--accent-color);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255,255,255,0.06);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: var(--accent-color);
+        }
+
+        .bottom-widgets {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 150;
+        }
+
+        .action-btn {
+            color: #000;
+            border: none;
+            padding: 12px 22px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        #gameBtn { background: #ffaa00; }
+        #gameCableBtn { background: #00d2ff; }
+        #shopBtn { background: #cc00ff; color: #fff; }
+
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--menu-bg);
+            color: var(--text-color);
+            border: 2px solid var(--accent-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 150;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #121216;
+            border: 3px solid var(--accent-color);
+            padding: 25px;
+            border-radius: 10px;
+            z-index: 200;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0,0,0,0.9);
+            width: 390px;
+            color: #fff;
+        }
+
+        .modal-wide {
+            width: 520px;
+        }
+
+        canvas.game-canvas {
+            background: #18181f;
+            border: 2px solid #444;
+            display: block;
+            margin: 15px auto;
+        }
+
+        .close-btn {
+            background: #ff3333;
+            color: white;
+            border: none;
+            padding: 7px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .shop-item {
+            background: #1f1f24;
+            border: 1px solid #3e3e46;
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-item button {
+            background: #cc00ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .shop-item button:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix"></canvas>
+
+    <nav>
+        <div class="nav-links">
+            <a onclick="scrollToSection('intro')" data-key="nav-home">Acasă</a>
+            <a onclick="scrollToSection('linux-hacking')" data-key="nav-lh">Linux Hacking</a>
+            <a onclick="scrollToSection('linux-normal')" data-key="nav-ln">Linux Normal</a>
+            <a onclick="scrollToSection('windows')" data-key="nav-win">Windows</a>
+            <a onclick="scrollToSection('macos')" data-key="nav-mac">macOS</a>
+        </div>
+        <div class="controls">
+            <div class="score-display">🪙 <span id="globalPoints">0</span> Pct</div>
+            <select id="themeSelect" onchange="changeTheme(this.value)">
+                <option value="hacker">Temă: Hacker Verde</option>
+                <option value="black">Temă: Deep Black</option>
+                <option value="light">Temă: Light Mode</option>
+                <option value="linux-os" id="opt-linux" disabled>🖥️ Rig Linux (Blocat)</option>
+                <option value="windows-os" id="opt-windows" disabled>🖥️ Statie Windows (Blocat)</option>
+                <option value="macos-os" id="opt-macos" disabled>🖥️ Studio macOS (Blocat)</option>
+            </select>
+            <button onclick="switchLanguage()" id="langBtn">EN</button>
+        </div>
+    </nav>
+
+    <div class="pc-frame">
+        <div class="sticker st-tux" onclick="alert('Mascota Linux: Pinguinul Tux!')">🐧 TUX INSIDE</div>
+        <div class="sticker st-kali" onclick="alert('Distribuție avansată de penetrare.')">🐉 KALI LINUX</div>
+        <div class="sticker st-arch" onclick="alert('I Use Arch BTW!')">🟦 ARCH STICKER</div>
+        <div class="sticker st-code" onclick="alert('Buffer overflow string payload.')">👾 0x41414141</div>
+        <div class="sticker st-root" onclick="alert('Acces total de administrator.')">👑 ROOT UID 0</div>
+
+        <div class="container">
+            <section id="intro">
+                <h1 data-key="intro-title">Sisteme de Operare & Laborator IT</h1>
+                <p data-key="intro-desc">Învață concepte de bază și tehnici avansate. Finalizează quiz-urile din secțiuni sau folosește jocurile din colț ca să aduni puncte și să cumperi calculatoare noi pentru teme interactive.</p>
+            </section>
+
+            <section id="linux-hacking">
+                <h2 data-key="lh-title">Linux pentru Securitate și Pentesting</h2>
+                <p>Distribuțiile destinate hacking-ului etic includ kernel-uri modificate special pentru a permite injecții de pachete în rețea și monitorizarea traficului aerian wireless.</p>
+                <ul>
+                    <li><strong>Kali Linux</strong> - Cea mai populară suită de securitate din lume.</li>
+                    <li><strong>Parrot Security</strong> - Alternativă bazată pe Debian, optimizată pentru anonimitate și securizare rapidă a fluxurilor.</li>
+                </ul>
+                <div class="quiz-container" id="quiz-lh">
+                    <h4 data-key="lh-q">Mini-Test: Ce program folosești pentru scanarea porturilor deschise în rețea?</h4>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-lh', this, true, 20)">Nmap (+20 Pct)</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-lh', this, false, 0)">Wireshark</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-lh', this, false, 0)">Metasploit Framework</div>
+                </div>
+            </section>
+
+            <section id="linux-normal">
+                <h2 data-key="ln-title">Linux Normal (Arhitectură și Utilizare Generală)</h2>
+                <p>Sistemele comerciale sau de server rulează pe aceeași bază Unix. Componenta centrală <strong>Kernel</strong> alocă resursele procesorului și memoriei RAM către aplicațiile pornite de utilizator prin mediul <strong>Shell/Terminal</strong>.</p>
+                <div class="quiz-container" id="quiz-ln">
+                    <h4 data-key="ln-q">Mini-Test: Ce componentă Linux gestionează în mod direct procesorul și memoria?</h4>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-ln', this, false, 0)">Interpretorul Bash</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-ln', this, true, 20)">Kernel-ul (Nucleul) (+20 Pct)</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-ln', this, false, 0)">Sistemul Systemd</div>
+                </div>
+            </section>
+
+            <section id="windows">
+                <h2 data-key="win-title">Sisteme Windows și Management Enterprise</h2>
+                <p>Arhitectura sistemelor de operare Microsoft folosește în corporații serviciul central de directoare **Active Directory (AD)** și administrează setările stațiilor prin Politici de Grup (GPO).</p>
+                <div class="quiz-container" id="quiz-win">
+                    <h4 data-key="win-q">Mini-Test: Ce serviciu gestionează utilizatorii și permisiunile global în Windows?</h4>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-win', this, true, 20)">Active Directory (+20 Pct)</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-win', this, false, 0)">Windows Defender Firewall</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-win', this, false, 0)">BitLocker Criptare</div>
+                </div>
+            </section>
+
+            <section id="macos">
+                <h2 data-key="mac-title">Ecosistemul macOS și Protecțiile Apple</h2>
+                <p>Bazat pe structura UNIX Darwin, macOS are sisteme integrate rigide cum ar fi **System Integrity Protection (SIP)**, care izolează fișierele rădăcină chiar și în fața contului Root.</p>
+                <div class="quiz-container" id="quiz-mac">
+                    <h4 data-key="mac-q">Mini-Test: Ce modul oprește modificările de sistem chiar și pentru userul ROOT?</h4>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-mac', this, true, 20)">SIP (System Integrity Protection) (+20 Pct)</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-mac', this, false, 0)">Gatekeeper Validation</div>
+                    <div class="quiz-option" onclick="claimQuizPoints('quiz-mac', this, false, 0)">FileVault Storage</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="bottom-widgets">
+        <button id="gameBtn" class="action-btn" onclick="openModal('tuxModal'); initTuxGame();">🎮 Tux Bird</button>
+        <button id="gameCableBtn" class="action-btn" onclick="openModal('cableModal'); resetCableGame();">🔌 Cyber Cable</button>
+        <button id="shopBtn" class="action-btn" onclick="openModal('shopModal')">🛒 Magazin PC</button>
+    </div>
+
+    <button id="scrollTopBtn" onclick="scrollToTop()">↑</button>
+
+    <div id="tuxModal" class="modal">
+        <h3 style="color: #ffaa00; margin-bottom: 5px;">Flappy Tux Arcade</h3>
+        <p style="font-size: 11px; color: #aaa; margin-bottom: 5px;">Apasă SPACE sau Click pe canvas pentru zbor</p>
+        <canvas id="tuxCanvas" class="game-canvas" width="320" height="350"></canvas>
+        <button class="close-btn" onclick="closeModal('tuxModal')">Închide</button>
+    </div>
+
+    <div id="cableModal" class="modal modal-wide">
+        <h3 style="color: #00d2ff; margin-bottom: 5px;">Cyber Cable Installer</h3>
+        <p style="font-size: 12px; color: #ccc; margin-bottom: 10px;">
+            Apasă pe tasta <b>[ SPACE ]</b> pentru a începe jocul, apoi ghidează firul galben <b>cu mouse-ul</b> pe axa verticală fără să atingi blocurile roșii!
+        </p>
+        <canvas id="cableCanvas" class="game-canvas" width="460" height="300"></canvas>
+        <button class="close-btn" onclick="closeModal('cableModal')">Închide</button>
+    </div>
+
+    <div id="shopModal" class="modal">
+        <h3 style="color: #cc00ff; margin-bottom: 10px;">Cloud Hardware Shop</h3>
+        <p style="font-size: 12px; margin-bottom:12px; color: #aaa;">Cumpără calculatoare din profitul acumulativ:</p>
+        
+        <div class="shop-item">
+            <div>
+                <h4>Linux Setup Station</h4>
+                <p style="font-size:11px; color:#ffaa00; margin:0;">Cost: 30 Pct</p>
+            </div>
+            <button id="buyLinuxBtn" onclick="buySystem('linux', 30)">Cumpără</button>
+        </div>
+
+        <div class="shop-item">
+            <div>
+                <h4>Windows Pro Rig</h4>
+                <p style="font-size:11px; color:#ffaa00; margin:0;">Cost: 50 Pct</p>
+            </div>
+            <button id="buyWindowsBtn" onclick="buySystem('windows', 50)">Cumpără</button>
+        </div>
+
+        <div class="shop-item">
+            <div>
+                <h4>Mac Studio Enterprise</h4>
+                <p style="font-size:11px; color:#ffaa00; margin:0;">Cost: 80 Pct</p>
+            </div>
+            <button id="buyMacosBtn" onclick="buySystem('macos', 80)">Cumpără</button>
+        </div>
+        
+        <button class="close-btn" onclick="closeModal('shopModal')">Închide</button>
+    </div>
+
+    <script>
+        let points = 0;
+        let purchased = { linux: false, windows: false, macos: false };
+
+        function addPoints(val) {
+            points += val;
+            document.getElementById('globalPoints').innerText = points;
+            updateShopButtons();
+        }
+
+        function buySystem(sys, cost) {
+            if(points >= cost && !purchased[sys]) {
+                points -= cost;
+                purchased[sys] = true;
+                document.getElementById('globalPoints').innerText = points;
+                
+                let opt = document.getElementById('opt-' + sys);
+                opt.disabled = false;
+                if(sys === 'linux') opt.innerText = "🖥️ Temă: Linux Mint Style";
+                if(sys === 'windows') opt.innerText = "🖥️ Temă: Windows 11 Neon";
+                if(sys === 'macos') opt.innerText = "🖥️ Temă: macOS Graphic Hub";
+
+                alert("Sistem achiziționat! Noua temă a fost deblocată în selectorul de sus.");
+                updateShopButtons();
+            }
+        }
+
+        function updateShopButtons() {
+            document.getElementById('buyLinuxBtn').disabled = purchased.linux || points < 30;
+            if(purchased.linux) document.getElementById('buyLinuxBtn').innerText = "Deblocat";
+            
+            document.getElementById('buyWindowsBtn').disabled = purchased.windows || points < 50;
+            if(purchased.windows) document.getElementById('buyWindowsBtn').innerText = "Deblocat";
+            
+            document.getElementById('buyMacosBtn').disabled = purchased.macos || points < 80;
+            if(purchased.macos) document.getElementById('buyMacosBtn').innerText = "Deblocat";
+        }
+
+        function openModal(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            if(id === 'tuxModal') clearInterval(tuxInterval);
+            if(id === 'cableModal') stopCableGame();
+        }
+
+        let currentLang = 'ro';
+        const langPack = {
+            ro: {
+                'nav-home': 'Acasă', 'nav-lh': 'Linux Hacking', 'nav-ln': 'Linux Normal', 'nav-win': 'Windows', 'nav-mac': 'macOS',
+                'intro-title': 'Sisteme de Operare & Laborator IT', 'intro-desc': 'Învață concepte de bază și tehnici avansate...',
+                'lh-title': 'Linux pentru Securitate și Pentesting', 'lh-q': 'Mini-Test: Ce program folosești pentru scanarea porturilor deschise în rețea?',
+                'ln-title': 'Linux Normal (Arhitectură și Utilizare Generală)', 'ln-q': 'Mini-Test: Ce componentă Linux gestionează în mod direct procesorul și memoria?',
+                'win-title': 'Sisteme Windows și Management Enterprise', 'win-q': 'Mini-Test: Ce serviciu gestionează utilizatorii și permisiunile global în Windows?',
+                'mac-title': 'Ecosistemul macOS și Protecțiile Apple', 'mac-q': 'Mini-Test: Ce modul oprește modificările de sistem chiar și pentru userul ROOT?'
+            },
+            en: {
+                'nav-home': 'Home', 'nav-lh': 'Linux Hacking', 'nav-ln': 'Linux Normal', 'nav-win': 'Windows', 'nav-mac': 'macOS',
+                'intro-title': 'Operating Systems & IT Lab', 'intro-desc': 'Learn basic concepts and advanced web techniques...',
+                'lh-title': 'Linux for Security and Pentesting', 'lh-q': 'Mini-Test: Which application do you use to map active ports?',
+                'ln-title': 'Normal Linux (Architecture & General Use)', 'ln-q': 'Mini-Test: Which component manages CPU and RAM memory directly?',
+                'win-title': 'Windows Systems & Enterprise Management', 'win-q': 'Mini-Test: Which tool centralizes users and access domains?',
+                'mac-title': 'macOS Ecosystem & Apple Solid Safeguards', 'mac-q': 'Mini-Test: Which module prevents system file edits even for ROOT?'
+            }
+        };
+
+        function switchLanguage() {
+            currentLang = currentLang === 'ro' ? 'en' : 'ro';
+            document.getElementById('langBtn').innerText = currentLang === 'ro' ? 'EN' : 'RO';
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if(langPack[currentLang][key]) el.innerText = langPack[currentLang][key];
+            });
+        }
+
+        let activeTheme = 'hacker';
+        function changeTheme(val) {
+            activeTheme = val;
+            document.body.className = '';
+            if(val !== 'hacker') document.body.classList.add('theme-' + val);
+        }
+
+        function scrollToSection(id) {
+            let target = document.getElementById(id);
+            if(target) target.scrollIntoView({ behavior: 'smooth' });
+        }
+        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        window.onscroll = function() {
+            let btn = document.getElementById("scrollTopBtn");
+            if (document.documentElement.scrollTop > 250) btn.style.display = "flex";
+            else btn.style.display = "none";
+        };
+
+        let doneQuizzes = [];
+        function claimQuizPoints(id, element, isCorrect, prize) {
+            if(doneQuizzes.includes(id)) return;
+            if(isCorrect) {
+                element.style.background = "#006600";
+                element.style.color = "#fff";
+                doneQuizzes.push(id);
+                addPoints(prize);
+            } else {
+                element.style.background = "#660000";
+                element.style.color = "#fff";
+            }
+        }
+
+        // --- EFECT INTERACTIV MATRIX BACKGROUND ---
+        const matrixCanvas = document.getElementById('matrix');
+        const mCtx = matrixCanvas.getContext('2d');
+        function resizeCanvas() {
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const letters = "01KALIROOTSYSTEM1010777SHELL";
+        const fontSz = 14;
+        let columns = matrixCanvas.width / fontSz;
+        let drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrixEffect() {
+            if(activeTheme === 'light') {
+                mCtx.fillStyle = 'rgba(245, 247, 250, 0.08)';
+                mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                mCtx.fillStyle = 'rgba(255, 85, 0, 0.12)';
+            } else if(activeTheme === 'black') {
+                mCtx.fillStyle = 'rgba(0,0,0,0.06)';
+                mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                mCtx.fillStyle = 'rgba(255,255,255,0.12)';
+            } else if(activeTheme === 'linux-os') {
+                mCtx.fillStyle = 'rgba(18, 31, 21, 0.06)';
+                mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                mCtx.fillStyle = 'rgba(46, 168, 71, 0.18)';
+            } else if(activeTheme === 'windows-os') {
+                mCtx.fillStyle = 'rgba(5, 20, 41, 0.06)';
+                mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                mCtx.fillStyle = 'rgba(0, 164, 239, 0.2)';
+            } else if(activeTheme === 'macos-os') {
+                mCtx.fillStyle = 'rgba(26, 26, 27, 0.06)';
+                mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                mCtx.fillStyle = 'rgba(191, 90, 242, 0.18)';
+            } else {
+                mCtx.fillStyle = 'rgba(5, 5, 5, 0.06)';
+                mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                mCtx.fillStyle = '#00ff00';
+            }
+
+            mCtx.font = fontSz + "px monospace";
+            for(let i = 0; i < drops.length; i++) {
+                let char = letters[Math.floor(Math.random() * letters.length)];
+                mCtx.fillText(char, i * fontSz, drops[i] * fontSz);
+                if(drops[i] * fontSz > matrixCanvas.height && Math.random() > 0.985) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrixEffect, 33);
+
+        // --- MINI JOC 1: FLAPPY TUX ---
+        let tuxInterval;
+        let tuxCanvas = document.getElementById('tuxCanvas');
+        let tCtx = tuxCanvas.getContext('2d');
+        let bird, walls, tScore, tOver;
+
+        function initTuxGame() {
+            bird = { x: 45, y: 130, v: 0, g: 0.38, impulse: -5.8, r: 10 };
+            walls = []; tScore = 0; tOver = false;
+            clearInterval(tuxInterval);
+            tuxInterval = setInterval(runTuxLoop, 20);
+        }
+
+        function runTuxLoop() {
+            if(tOver) {
+                tCtx.fillStyle = "rgba(0,0,0,0.7)";
+                tCtx.fillRect(0, 0, tuxCanvas.width, tuxCanvas.height);
+                tCtx.fillStyle = "#ffaa00"; tCtx.font = "15px monospace";
+                tCtx.fillText("GAME OVER - SCOR: " + tScore, 65, 150);
+                tCtx.fillStyle = "#fff"; tCtx.font = "11px monospace";
+                tCtx.fillText("Click pe ecran pentru Retry", 60, 185);
+                return;
+            }
+
+            bird.v += bird.g;
+            bird.y += bird.v;
+            if(bird.y > tuxCanvas.height || bird.y < 0) tOver = true;
+
+            if(walls.length === 0 || walls[walls.length - 1].x < tuxCanvas.width - 130) {
+                let space = 95;
+                let h = Math.floor(Math.random() * (tuxCanvas.height - space - 60)) + 30;
+                walls.push({ x: tuxCanvas.width, top: h, bottom: tuxCanvas.height - h - space, passed: false });
+            }
+
+            walls.forEach(w => w.x -= 2.2);
+            walls.forEach(w => {
+                if(w.x < bird.x + bird.r && w.x + 35 > bird.x - bird.r) {
+                    if(bird.y - bird.r < w.top || bird.y + bird.r > tuxCanvas.height - w.bottom) tOver = true;
+                }
+                if(!w.passed && w.x + 35 < bird.x) {
+                    tScore++; w.passed = true; addPoints(5);
+                }
+            });
+            walls = walls.filter(w => w.x > -40);
+
+            tCtx.clearRect(0, 0, tuxCanvas.width, tuxCanvas.height);
+            tCtx.beginPath(); tCtx.arc(bird.x, bird.y, bird.r, 0, Math.PI * 2);
+            tCtx.fillStyle = "#fff"; tCtx.fill(); tCtx.strokeStyle = "#000"; tCtx.stroke();
+            tCtx.fillStyle = "#ffaa00"; tCtx.fillRect(bird.x + 3, bird.y - 3, 6, 5);
+            
+            walls.forEach(w => {
+                tCtx.fillStyle = "#c2185b";
+                tCtx.fillRect(w.x, 0, 35, w.top);
+                tCtx.fillRect(w.x, tuxCanvas.height - w.bottom, 35, w.bottom);
+            });
+            tCtx.fillStyle = "#ffaa00"; tCtx.font = "13px monospace";
+            tCtx.fillText("Scor: " + tScore, 10, 20);
+        }
+
+        window.addEventListener('keydown', function(e) {
+            if(e.code === 'Space' && document.getElementById('tuxModal').style.display === 'block') {
+                if(tOver) initTuxGame(); else bird.v = bird.impulse;
+                e.preventDefault();
+            }
+        });
+        tuxCanvas.addEventListener('click', function() {
+            if(tOver) initTuxGame(); else bird.v = bird.impulse;
+        });
+
+        // --- MINI JOC 2: CYBER CABLE TRACKER (PORNIRE PE SPACE + GHIDARE MOUSE) ---
+        let cableCanvas = document.getElementById('cableCanvas');
+        let cCtx = cableCanvas.getContext('2d');
+        let cableActive = false;
+        let controlEnabled = false; 
+        let cablePos = { x: 35, y: 50 };
+        
+        const blocks = [
+            { x: 130, y: 0, w: 30, h: 170 },
+            { x: 240, y: 120, w: 35, h: 180 },
+            { x: 350, y: 0, w: 30, h: 180 }
+        ];
+        const serverNode = { x: 15, y: 30, w: 45, h: 45 };
+        const switchNode = { x: 400, y: 230, w: 45, h: 45 };
+
+        function resetCableGame() {
+            cableActive = true; 
+            controlEnabled = false; 
+            cablePos = { x: 35, y: 50 };
+            cableCanvas.style.cursor = 'default';
+            window.addEventListener('keydown', handleCableStartKey);
+            cableCanvas.addEventListener('mousemove', handleCableMove);
+            renderCableScene();
+        }
+
+        function handleCableStartKey(e) {
+            if(e.code === 'Space' && document.getElementById('cableModal').style.display === 'block' && !controlEnabled) {
+                e.preventDefault();
+                controlEnabled = true;
+                cableCanvas.style.cursor = 'none';
+                window.removeEventListener('keydown', handleCableStartKey);
+                renderCableScene();
+            }
+        }
+
+        function stopCableGame() {
+            cableActive = false;
+            controlEnabled = false;
+            window.removeEventListener('keydown', handleCableStartKey);
+            cableCanvas.removeEventListener('mousemove', handleCableMove);
+            cableCanvas.style.cursor = 'default';
+        }
+
+        function handleCableMove(e) {
+            if(!cableActive || !controlEnabled) return;
+
+            let bounds = cableCanvas.getBoundingClientRect();
+            // Axa X înaintează automat din animație/interval sau o lăsăm pur ghidată de mouse (cerința zice: ghidez din mouse, dar axa X merge singură spre dreapta sau e complet liberă? Facem X să meargă singur și mouse-ul modifică doar Y pentru a preveni bugul)
+            // Pentru control optim: X crește automat cu viteză constantă, Mouse-ul modifică doar înălțimea Y!
+            cablePos.x += 1.8; 
+            
+            let mouseY = e.clientY - bounds.top;
+            cablePos.y = mouseY;
+
+            if(cablePos.x <= 0 || cablePos.x >= cableCanvas.width || cablePos.y <= 0 || cablePos.y >= cableCanvas.height) {
+                failCable("Ai ieșit din perimetrul rețelei!");
+                return;
+            }
+
+            blocks.forEach(b => {
+                if(cablePos.x > b.x && cablePos.x < b.x + b.w && cablePos.y > b.y && cablePos.y < b.y + b.h) {
+                    failCable("Scurtcircuit! Ai atins un firewall.");
+                }
+            });
+
+            if(cablePos.x > switchNode.x && cablePos.x < switchNode.x + switchNode.w && cablePos.y > switchNode.y && cablePos.y < switchNode.y + switchNode.h) {
+                stopCableGame();
+                addPoints(30);
+                alert("Conexiune stabilă! Serverul a fost conectat la internet. (+30 Pct)");
+                resetCableGame();
+            }
+            renderCableScene();
+        }
+
+        function failCable(txt) {
+            stopCableGame();
+            alert(txt + " Resetează runda prin tasta [ SPACE ].");
+            resetCableGame();
+        }
+
+        function renderCableScene() {
+            cCtx.clearRect(0, 0, cableCanvas.width, cableCanvas.height);
+            
+            cCtx.fillStyle = "#263238"; cCtx.fillRect(serverNode.x, serverNode.y, serverNode.w, serverNode.h);
+            cCtx.fillStyle = "#00ff00"; cCtx.font = "9px sans-serif"; cCtx.fillText("SERVER", serverNode.x+5, serverNode.y+26);
+            
+            cCtx.fillStyle = "#1565c0"; cCtx.fillRect(switchNode.x, switchNode.y, switchNode.w, switchNode.h);
+            cCtx.fillStyle = "#00e5ff"; cCtx.fillText("SWITCH", switchNode.x+5, switchNode.y+26);
+            
+            cCtx.fillStyle = "#b71c1c";
+            blocks.forEach(b => cCtx.fillRect(b.x, b.y, b.w, b.h));
+            
+            cCtx.beginPath(); cCtx.moveTo(35, 50); cCtx.lineTo(cablePos.x, cablePos.y);
+            cCtx.strokeStyle = controlEnabled ? "#ffeb3b" : "#444"; 
+            cCtx.lineWidth = 3; 
+            cCtx.stroke();
+            
+            cCtx.fillStyle = "#00e5ff"; cCtx.beginPath();
+            cCtx.moveTo(cablePos.x, cablePos.y - 6); cCtx.lineTo(cablePos.x + 9, cablePos.y); cCtx.lineTo(cablePos.x, cablePos.y + 6);
+            cCtx.fill();
+
+            if(!controlEnabled) {
+                cCtx.fillStyle = "rgba(0,0,0,0.75)";
+                cCtx.fillRect(0,0,cableCanvas.width, cableCanvas.height);
+                cCtx.fillStyle = "#fff";
+                cCtx.font = "13px monospace";
+                cCtx.fillText("APASĂ TASTA [ SPACE ] PENTRU START", 95, 150);
+            }
+        }
+        
+        // Loop dedicat pentru redraw constant când jocul e pornit (pentru ca X să meargă singur spre dreapta)
+        setInterval(function() {
+            if(cableActive && controlEnabled) {
+                cablePos.x += 1.2; // Înaintare automată continuă
+                // Verificări coliziuni la pas pasiv
+                if(cablePos.x >= cableCanvas.width) {
+                    failCable("Cablul a depășit lungimea maximă!");
+                }
+                blocks.forEach(b => {
+                    if(cablePos.x > b.x && cablePos.x < b.x + b.w && cablePos.y > b.y && cablePos.y < b.y + b.h) {
+                        failCable("Scurtcircuit! Ai atins un firewall.");
+                    }
+                });
+                if(cablePos.x > switchNode.x && cablePos.x < switchNode.x + switchNode.w && cablePos.y > switchNode.y && cablePos.y < switchNode.y + switchNode.h) {
+                    stopCableGame();
+                    addPoints(30);
+                    alert("Conexiune stabilă! Serverul a fost conectat la internet. (+30 Pct)");
+                    resetCableGame();
+                }
+                renderCableScene();
+            }
+        }, 20);
+    </script>
+</body>
+</html>
